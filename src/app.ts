@@ -1,62 +1,54 @@
-import fastify from "fastify";
-import fastifySwagger from "@fastify/swagger";
-import fastifySwaggerUI from "@fastify/swagger-ui";
-import { z } from "zod";
+import fastify from 'fastify';
+import fastifySwagger from '@fastify/swagger';
+import fastifySwaggerUI from '@fastify/swagger-ui';
+
 import {
-  jsonSchemaTransform,
-  serializerCompiler,
-  validatorCompiler,
-  ZodTypeProvider,
-} from "fastify-type-provider-zod";
+    jsonSchemaTransform,
+    serializerCompiler,
+    validatorCompiler,
+} from 'fastify-type-provider-zod';
 
-import a from '@src/utils'
+import handlers from './handlers';
+import databasePlugin from './database';
 
-console.log(a())
+const app = fastify({
+    logger: true,
+});
 
-const app = fastify();
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
 app.register(fastifySwagger, {
-  openapi: {
-    info: {
-      title: "SampleApi",
-      description: "Sample backend service",
-      version: "1.0.0",
+    openapi: {
+        info: {
+            title: 'SampleApi',
+            description: 'Sample backend service',
+            version: '1.0.0',
+        },
+        servers: [],
     },
-    servers: [],
-  },
-  transform: jsonSchemaTransform
+    transform: jsonSchemaTransform,
 });
 
 app.register(fastifySwaggerUI, {
-  routePrefix: "/documentation",
-});
-
-const LOGIN_SCHEMA = z.object({
-  username: z.string().max(32).describe("Some description for username"),
-  password: z.string().max(32),
+    routePrefix: '/apidocs',
 });
 
 app.after(() => {
-  app.withTypeProvider<ZodTypeProvider>().route({
-    method: "POST",
-    url: "/login",
-    schema: { body: LOGIN_SCHEMA },
-    handler: (req, res) => {
-      res.send("ok");
-    },
-  });
+    // mongodb
+    app.register(databasePlugin);
+    // routes
+    app.register(handlers, {
+        prefix: '/api',
+    });
 });
 
 async function run() {
-  await app.ready();
-
-  await app.listen({
-    port: 4949,
-  });
-
-  console.log(`Documentation running at http://localhost:4949/documentation`);
+    await app.ready();
+    await app.listen({
+        port: 8111,
+    });
+    console.info('Documentation running at http://localhost:8111/apidocs');
 }
 
 run();

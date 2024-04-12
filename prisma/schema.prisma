@@ -1,0 +1,32 @@
+datasource db {
+  provider = "mongodb"
+  // url      = "mongodb://root:root123!@10.178.18.138:8017/baige"
+  url      = env("MONGODB_URL")
+}
+
+generator jsonSchema {
+  provider = "prisma-json-schema-generator"
+  output = "../src/database"
+  includeRequiredFields = "true"
+  keepRelationScalarFields = "true"
+}
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+type UserInfo {
+  age  Int
+  address String?
+  friends String[]
+}
+
+model Users {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId 
+  key String @unique 
+  name String
+  info UserInfo
+}
+
+

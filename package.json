@@ -6,29 +6,46 @@
   "type": "module",
   "scripts": {
     "start": "node dist/app.js",
-    "build": "tsc && tsc-alias",
+    "build": "npm run clean && tsc && tsc-alias",
+    "clean": "rimraf dist",
     "build:watch": "concurrently \"tsc -w\" \"tsc-alias -w\"",
     "dev": "npm run build && concurrently \"npm run build:watch\" \"nodemon --watch dist --inspect dist/app.js\"",
-    "lint": "eslint . --ext .js,.cjs,.mjs,.ts --fix"
+    "lint": "eslint . --ext .js,.cjs,.mjs,.ts --fix",
+    "schema2zod": "json-refs resolve src/database/json-schema.json | json-schema-to-zod | prettier --parser typescript > src/database/schema.ts",
+    "generate-prisma": "prisma generate && node src/utils/prisma-generate-schema-json.js && npm run schema2zod && rimraf src/database/json-schema.json && eslint --fix src/database/schema.ts",
+    "format-prisma": "prisma format"
   },
   "license": "ISC",
   "dependencies": {
     "@fastify/swagger": "^8.14.0",
     "@fastify/swagger-ui": "^3.0.0",
+    "@prisma/client": "^5.12.1",
+    "dotenv": "^16.4.5",
     "fastify": "^4.26.2",
+    "fastify-plugin": "^4.5.1",
     "fastify-type-provider-zod": "^1.1.9",
-    "ts-node": "^10.9.2",
+    "prisma": "^5.12.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@babel/eslint-plugin": "^7.23.5",
     "@types/node": "^20.12.5",
     "@typescript-eslint/eslint-plugin": "^7.5.0",
     "@typescript-eslint/parser": "^7.5.0",
     "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.1",
+    "json-refs": "^3.0.15",
+    "json-schema-to-zod": "^2.0.14",
     "nodemon": "^3.1.0",
+    "prettier": "^3.2.5",
+    "prisma-json-schema-generator": "^5.1.1",
+    "rimraf": "^5.0.5",
     "tsc-alias": "^1.8.8",
     "typescript": "^5.4.4"
+  },
+  "resolutions": {
+    "wrap-ansi": "7.0.0",
+    "string-width": "4.2.3"
   }
 }
