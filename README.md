@@ -5,3 +5,8 @@
 ## 注意事项
 
 1. mongodb需要支持副本集，以便使用 prisma。[单实例副本 mongodb Docker 示例](https://github.com/wizardAEI/mongo-replica)
+2. prisma 不能直接创建表格，需要先在对应的数据库中创建表格：
+    ```
+        use database;
+        db.createCollection("Users");
+    ```
