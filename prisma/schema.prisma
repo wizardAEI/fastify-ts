@@ -1,6 +1,5 @@
 datasource db {
   provider = "mongodb"
-  // url      = "mongodb://root:root123!@10.178.18.138:8017/baige"
   url      = env("MONGODB_URL")
 }
 
