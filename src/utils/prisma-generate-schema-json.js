@@ -10,11 +10,33 @@ const file = readFileSync(join(__dirname, '../database/json-schema.json'));
 
 const prismaSchema = JSON.parse(file.toString());
 
-const target = JSON.parse(file.toString());
-target.required = [];
+prismaSchema.required = [];
 
 Object.keys(prismaSchema.properties).forEach(property => {
-    target.required.push(property);
+    prismaSchema.required.push(property);
 });
 
-writeFileSync(join(__dirname, '../database/json-schema.json'), JSON.stringify(target, null, 2));
+function dfs(obj) {
+    if (!obj) {
+        return;
+    }
+    // eslint-disable-next-line guard-for-in
+    for (const key in obj) {
+        const item = obj[key];
+        if (item.type === 'object') {
+            Object.keys(item.properties).forEach(key => {
+                const value = item.properties[key];
+                if (!value.anyOf && key !== 'id') {
+                    item.required.push(key);
+                }
+            });
+            item.required = [...new Set(item.required)];
+            dfs(item.properties);
+        }
+    }
+}
+
+dfs(prismaSchema.definitions);
+
+
+writeFileSync(join(__dirname, '../database/json-schema.json'), JSON.stringify(prismaSchema, null, 2));
